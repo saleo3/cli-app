@@ -5,13 +5,14 @@ module.exports = function () {
     KEYS: getKeys,
     MEMBERS: getMembers,
     ADD: addMember,
-    REMOVE: removeMember,
-    REMOVEALL: removeAll,
+    REMOVE: remove,
+    REMOVEALL: (hash, key) => remove(hash, key, null, true),
     CLEAR: clear,
     KEYEXISTS: keyExists,
     MEMBEREXISTS: hasMember,
-    ALLMEMBERS: getAllMembers,
+    ALLMEMBERS: (hash) => getItems(hash, false),
     ITEMS: getItems,
+    HASH: (hash) => console.log(hash),
   };
 
   return (string) => {
@@ -22,24 +23,20 @@ module.exports = function () {
       return console.log(`${operation} does not exist`);
 
     if (['ADD', 'REMOVE', 'MEMBEREXISTS'].includes(operation)) {
+      if (!key || !members.length) return console.log(`Data missing`);
       members.forEach((member) => operations[operation](hash, key, member));
     } else {
-      operations[operation](hash, key, members);
+      operations[operation](hash, key);
     }
   };
 };
 
-function getItems(hash, showAll = true) {
+function getItems(hash, showAll = true, cont = 1) {
   if (!hash.size) return console.log(') empty set');
 
-  let cont = 1;
   for (const [key, members] of hash) {
     cont = iterate(members, showAll && key, cont);
   }
-}
-
-function getAllMembers(hash) {
-  getItems(hash, false);
 }
 
 function getMembers(hash, key) {
@@ -71,24 +68,19 @@ function addMember(hash, key, member) {
   console.log(') Added');
 }
 
-function removeMember(hash, key, member) {
+function remove(hash, key, member, removeAll = false) {
   if (!hash.has(key)) return console.log(') ERROR, key does not exist');
   let set = hash.get(key);
-  if (!set.has(member)) return console.log(') ERROR, member does not exist');
+  if (!set.has(member) && !removeAll)
+    return console.log(') ERROR, member does not exist');
   set.delete(member);
-  if (!set.size) hash.delete(key);
+  if (!set.size || removeAll) hash.delete(key);
   console.log(') Removed');
 }
 
 function clear(hash) {
   hash.clear();
   console.log(') Cleared');
-}
-
-function removeAll(hash, key) {
-  if (!hash.has(key)) return console.log(') ERROR, key does not exist');
-  hash.delete(key);
-  console.log(') Removed');
 }
 
 function iterate(iterable, key = '', cont = 1) {
