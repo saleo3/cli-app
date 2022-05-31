@@ -13,6 +13,7 @@ module.exports = function () {
     ALLMEMBERS: (hash) => getItems(hash, false),
     ITEMS: getItems,
     HASH: (hash) => console.log(hash),
+    INTERSECTION: getInterMembers,
   };
 
   return (string) => {
@@ -25,6 +26,8 @@ module.exports = function () {
     if (['ADD', 'REMOVE', 'MEMBEREXISTS'].includes(operation)) {
       if (!key || !members.length) return console.log(`Data missing`);
       members.forEach((member) => operations[operation](hash, key, member));
+    } else if ('INTERSECTION' === operation) {
+      operations[operation](hash, key, members[0]);
     } else {
       operations[operation](hash, key);
     }
@@ -90,4 +93,13 @@ function iterate(iterable, key = '', cont = 1) {
   }
 
   return cont;
+}
+
+function getInterMembers(hash, key1, key2) {
+  if (!hash.size) return console.log('empty');
+  if (!hash.has(key1)) return console.log(`ERROR, key does not exist.`);
+  if (!hash.has(key2)) return console.log(`ERROR, key does not exist.`);
+  const [set1, set2] = [hash.get(key1), hash.get(key2)];
+  const inter = new Set([...set1].filter((item) => set2.has(item)));
+  iterate(inter);
 }
